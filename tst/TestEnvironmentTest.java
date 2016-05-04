@@ -70,7 +70,7 @@ public class TestEnvironmentTest {
     @Test
     public void testGetAffectedThreshold() throws Exception {
         //numStudents * 0.005
-        assertEquals((int) numStudents * 0.005, testEnv.getAffectedThreshold());
+        assertEquals((int) (numStudents * 0.005), testEnv.getAffectedThreshold());
     }
 
     @Test
@@ -142,6 +142,7 @@ public class TestEnvironmentTest {
         TestEnvironment limitTestEnv = new TestEnvironment(baseSiteVersion, true);
         List<Class> randomClasses = createRandomClasses(1000);
         jumble(randomClasses);
+
         for (Class rc : randomClasses) {
             limitTestEnv.addClass(rc);
         }
@@ -177,7 +178,7 @@ public class TestEnvironmentTest {
             int classSize = random.nextInt(maxClassSize);
             List<User> students = new ArrayList<>(classSize);
             for (int j = 0; j < classSize; j++) {
-                students.add(new User(j+i+"student", baseSiteVersion));
+                students.add(new User(j+","+i+"student", baseSiteVersion));
             }
             Class classroom = new Class( new User(i+"teacher", baseSiteVersion), students);
             allClasses.add(classroom);
@@ -185,6 +186,10 @@ public class TestEnvironmentTest {
         return allClasses;
     }
 
+    /**
+     * Basically draws a bunch of random student/teacher relationships between random classes
+     * @param classes
+     */
     private void jumble(List<Class> classes) {
         Random random = new Random();
         for (Class classroom : classes) {
@@ -195,9 +200,7 @@ public class TestEnvironmentTest {
             for (int rs = 0; rs < numRogueStudents; rs++) {
                 anotherClassroom.enrollStudent(classroom.getAllUsers().get(rs));
             }
-            for (int rs = numRogueTeachers; rs > 0; rs--) {
-                anotherClassroom.enrollTeacher(classroom.getAllUsers().get(rs));
-            }
+            anotherClassroom.enrollTeacher(classroom.getAllUsers().get(numRogueTeachers));
         }
     }
 }

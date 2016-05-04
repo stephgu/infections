@@ -215,6 +215,10 @@ public class TestEnvironment {
                 user.setSiteVersion(newSiteVersion);
                 infectedUsers.add(user);
                 classToInfect.increaseNumStudentsInfected();
+                //on avg this will be quite small
+                for (Class usersClass : user.getAllClasses()) {
+                    usersClass.increaseNumStudentsInfected();
+                }
             }
         }
         toInfectQueue.addAll(classToInfect.getConnectedClasses());
