@@ -154,7 +154,7 @@ public class TestEnvironmentTest {
         for (Class c : limitTestEnv.getAllClasses()) {
             if (c.isCompletelyInfected()) {
                 completelyInfectedClass += 1;
-            } else if (c.getPercentageStudentsInfected() < 0.2) {
+            } else if (c.getPercentageStudentsInfected() < 0.005) {
                 smallInfectedClass += 1;
             } else {
                 badlyInfectedClass += 1;
@@ -164,10 +164,14 @@ public class TestEnvironmentTest {
         float percentCompletelyInfectedClasses = (float) completelyInfectedClass / (float) limitTestEnv.getAllClasses().size();
         float percentSmallInfectedClasses = (float) smallInfectedClass / (float) limitTestEnv.getAllClasses().size();
         float percentBadlyInfectedClasses = (float) badlyInfectedClass / (float) limitTestEnv.getAllClasses().size();
-        System.out.println("percent completely infected: " + percentCompletelyInfectedClasses);
-        System.out.println("percent minor infected: " + percentSmallInfectedClasses);
-        System.out.println("percent badly infected: " + percentBadlyInfectedClasses);
-        System.out.println("percent total completely infected: " + limitTestEnv.getTotalPercentageInfected());
+        System.out.println("percent completely infected classes: " + percentCompletelyInfectedClasses);
+        System.out.println("percent minor infected classes: " + percentSmallInfectedClasses);
+        System.out.println("percent badly infected classes: " + percentBadlyInfectedClasses);
+        System.out.println("percent of total infected users: " + limitTestEnv.getTotalPercentageInfected());
+        //I noticed usually the badly infected classes is very very low (aka all classes above 0.5% infection are low)
+        //Majority of classes only have a couple students infected
+        //Hit very close to the target percentage of 25%
+        //Time to run, < 2 seconds
     }
 
     private List<Class> createRandomClasses(int numTotalClasses) {

@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * This is the environment which holds all the information for testing a new feature to the website,
