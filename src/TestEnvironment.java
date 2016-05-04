@@ -78,6 +78,10 @@ public class TestEnvironment {
         return allUsersList;
     }
 
+    protected HashSet<User> getInfectedUsers() {
+        return infectedUsers;
+    }
+
     public void prettyPrintInfectedUsers() {
         System.out.println("Infected users are:");
         for (User infectedUser : infectedUsers) {
@@ -202,7 +206,7 @@ public class TestEnvironment {
      * @param newSiteVersion
      * @return Will return a list of all classes that users in the class are connected to
      */
-    private void infect(Class classToInfect, String newSiteVersion, Queue toInfectQueue) {
+    protected void infect(Class classToInfect, String newSiteVersion, Queue toInfectQueue) {
         if (classToInfect.isCompletelyInfected()) {
             return;
         }
@@ -216,7 +220,7 @@ public class TestEnvironment {
         toInfectQueue.addAll(classToInfect.getConnectedClasses());
     }
 
-    private float getTotalPercentageInfected() {
+    protected float getTotalPercentageInfected() {
         return (float) infectedUsers.size() / (float) allUsersList.size();
     }
 
@@ -225,7 +229,7 @@ public class TestEnvironment {
      * @param targetPercentage
      * @return
      */
-    private boolean isPercentageInfectedWithinTargetRange(float targetPercentage) {
+    protected boolean isPercentageInfectedWithinTargetRange(float targetPercentage) {
         return targetPercentage - getTotalPercentageInfected() < delta;
     }
 
@@ -291,6 +295,8 @@ public class TestEnvironment {
         for (Class c : allClasses) {
             for (User user : c.getAllUsers()) {
                 c.getConnectedClasses().addAll(user.getAllClasses());
+                //don't add yourself
+                c.getConnectedClasses().remove(c);
             }
         }
     }
