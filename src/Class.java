@@ -1,22 +1,26 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Class {
 
     private List<User> students;
     private User teacher;
     private int numStudentsInfected;
+    private Set<Class> connectedClasses;
 
     public Class(User teacher) {
-        teachClass(teacher);
         this.students = new ArrayList<>();
-        numStudentsInfected = 0;
+        this.numStudentsInfected = 0;
+        this.connectedClasses = new HashSet<>();
+        enrollTeacher(teacher);
     }
 
     public Class(User teacher, List<User> students) {
         this(teacher);
         for (User student : students) {
-            enrollClass(student);
+            enrollStudent(student);
         }
     }
 
@@ -30,6 +34,26 @@ public class Class {
 
     public float getPercentageStudentsInfected() {
         return (float) numStudentsInfected / (float) students.size();
+    }
+
+    public int getNumStudentsInfected() {
+        return numStudentsInfected;
+    }
+
+    public int getNumStudentsNotInfected() {
+        return students.size() - numStudentsInfected;
+    }
+
+    public int getNumStudentsAffected() {
+        int totalAffected = 0;
+        for (Class connectedClass : connectedClasses) {
+            totalAffected += connectedClass.getNumStudentsNotInfected();
+        }
+        return totalAffected;
+    }
+
+    public Set<Class> getConnectedClasses() {
+        return connectedClasses;
     }
 
     public List<User> getStudents() {
@@ -47,14 +71,16 @@ public class Class {
         return allUsers;
     }
 
-    public void enrollClass(User student) {
+    public void enrollStudent(User student) {
         students.add(student);
         student.addClassToTake(this);
+        connectedClasses.addAll(student.getAllClasses());
     }
 
-    public void teachClass(User newTeacher) {
+    public void enrollTeacher(User newTeacher) {
         teacher = newTeacher;
         newTeacher.addClassToTeach(this);
+        connectedClasses.addAll(teacher.getAllClasses());
     }
 
     public void prettyPrintClass() {
