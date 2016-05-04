@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * This is the environment which holds all the information for testing a new feature to the website,
@@ -34,7 +35,7 @@ public class TestEnvironment {
         this.delta = 0.05f;
         this.affectedThresholdFactor = 0.005f;
         this.sizeLimit = 10000;
-        this.numRetries = 3;
+        this.numRetries = 10;
     }
 
     public void addClass(Class classToAdd) {
@@ -105,13 +106,12 @@ public class TestEnvironment {
 
     /**
      * Given a user, infected all users within any degree of connection to that user
-     * @param firstInfectedUser
      * @param newSiteVersion
      */
-    public void totalInfection(User firstInfectedUser, String newSiteVersion) {
+    public void totalInfection(String newSiteVersion) {
         //use bfs to avoid stack limitations of dfs
         Queue<User> allUsersToInfect = new LinkedList<>();
-        allUsersToInfect.add(firstInfectedUser);
+        allUsersToInfect.add(getRandomNotInfectedUser());
 
         while (!allUsersToInfect.isEmpty()) {
             User userToInfect = allUsersToInfect.poll();
@@ -129,27 +129,17 @@ public class TestEnvironment {
             }
         }
     }
-
-    public boolean hitTarget(float targetPercentage) {
-        return getTotalPercentageInfected() >= targetPercentage;
-    }
-
-    public int getAffectedThreshold() {
-        return (int) (affectedThresholdFactor * allUsersList.size());
-    }
-
-    public boolean meetsRequirements(Class randomClass, float targetPercentage) {
-        if (isPercentageInfectedWithinTargetRange(targetPercentage)) {
-            return randomClass.getNumStudentsAffected() < getAffectedThreshold();
-        } else {
-            return randomClass.getConnectedClasses().size() > sizeLimit;
-        }
-    }
-
-    public void limitedInfection(User firstInfectedUser, String newSiteVersion, float targetPercentage) {
+    /**
+     * Infects only up to the @targetPercentage amount of users, +/- error of 1 class size, which is assumed to be
+     * reasonably within the amount of the targetPercentage on average
+     * @param newSiteVersion
+     * @param targetPercentage
+     */
+    public void limitedInfection(String newSiteVersion, float targetPercentage) {
+        setAllConnectedClasses();
         boolean forceInfect = false;
         Queue<Class> toInfectQueue = new LinkedList<>();
-        toInfectQueue.addAll(firstInfectedUser.getAllClasses());
+        toInfectQueue.add(getRandomClass());
 
         //don't stop if the queue isn't empty or we haven't hit the target yet
         while (!toInfectQueue.isEmpty() || !hitTarget(targetPercentage)) {
@@ -162,7 +152,7 @@ public class TestEnvironment {
                 Class randomClass = null;
                 //tries to randomly pick a class that meets the requirements <numRetries> number of times
                 for (int i = 0; i < numRetries; i++) {
-                    randomClass = getRandomNotInfectedUser().getAllClasses().get(0);
+                    randomClass = getRandomClass();
                     if (meetsRequirements(randomClass, targetPercentage)) {
                         toInfectQueue.add(randomClass);
                         break;
@@ -213,6 +203,9 @@ public class TestEnvironment {
      * @return Will return a list of all classes that users in the class are connected to
      */
     private void infect(Class classToInfect, String newSiteVersion, Queue toInfectQueue) {
+        if (classToInfect.isCompletelyInfected()) {
+            return;
+        }
         for (User user : classToInfect.getAllUsers()) {
             if (!user.getSiteVersion().equals(newSiteVersion)) {
                 user.setSiteVersion(newSiteVersion);
@@ -233,6 +226,72 @@ public class TestEnvironment {
      * @return
      */
     private boolean isPercentageInfectedWithinTargetRange(float targetPercentage) {
-        return Math.abs(targetPercentage - getTotalPercentageInfected()) < delta;
+        return targetPercentage - getTotalPercentageInfected() < delta;
+    }
+
+
+    /**
+     * Calculates if the total percentage of infected people has met/surpassed the target percentage
+     * @param targetPercentage
+     * @return
+     */
+    public boolean hitTarget(float targetPercentage) {
+        return getTotalPercentageInfected() >= targetPercentage;
+    }
+
+    /**
+     * Gets the max number of uninfected people we will tolerate affecting
+     * @return
+     */
+    public int getAffectedThreshold() {
+        return (int) (affectedThresholdFactor * allUsersList.size());
+    }
+
+    /**
+     * Returns true if the node's connections don't go over the size limit, and its under the threshold given
+     * that we're already close to the target percentage
+     * @param randomClass
+     * @param targetPercentage
+     * @return
+     */
+    public boolean meetsRequirements(Class randomClass, float targetPercentage) {
+        //if the node's connected classes are too big, doesn't meet requirements
+        if (randomClass.getConnectedClasses().size() > sizeLimit) {
+            return false;
+        }
+        //if we are close to the target, we also want to make sure the num affected is under the threshold
+        if (isPercentageInfectedWithinTargetRange(targetPercentage)) {
+            return randomClass.getNumStudentsAffected() < getAffectedThreshold();
+        }
+        //if we hit here it means we are not within target range and also under the size limit
+        return true;
+    }
+
+    public int getRandomNumber(int max) {
+        Random random = new Random();
+        return random.nextInt(max);
+    }
+
+    /**
+     * Gets a random class, but with a weighted probability given the number of users there are
+     * @return
+     */
+    public Class getRandomClass() {
+        User randomUser = getRandomNotInfectedUser();
+        int randomNumber = getRandomNumber(randomUser.getAllClasses().size());
+        return randomUser.getAllClasses().get(randomNumber);
+    }
+
+    /**
+     * Goes through every class in the system and sets the correct number of "connecting classes".
+     * A class is "connected" to a class if there are any relations between the two classes
+     */
+    public void setAllConnectedClasses() {
+        List<Class> allClasses = getAllClasses();
+        for (Class c : allClasses) {
+            for (User user : c.getAllUsers()) {
+                c.getConnectedClasses().addAll(user.getAllClasses());
+            }
+        }
     }
 }

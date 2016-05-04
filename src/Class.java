@@ -24,6 +24,14 @@ public class Class {
         }
     }
 
+    public Set<Class> getConnectedClasses() {
+        return connectedClasses;
+    }
+
+    public void setConnectedClasses(Set<Class> newConnectedClasses) {
+        connectedClasses = newConnectedClasses;
+    }
+
     public boolean isCompletelyInfected() {
         return numStudentsInfected >= students.size();
     }
@@ -52,10 +60,6 @@ public class Class {
         return totalAffected;
     }
 
-    public Set<Class> getConnectedClasses() {
-        return connectedClasses;
-    }
-
     public List<User> getStudents() {
         return students;
     }
@@ -74,13 +78,11 @@ public class Class {
     public void enrollStudent(User student) {
         students.add(student);
         student.addClassToTake(this);
-        connectedClasses.addAll(student.getAllClasses());
     }
 
     public void enrollTeacher(User newTeacher) {
         teacher = newTeacher;
         newTeacher.addClassToTeach(this);
-        connectedClasses.addAll(teacher.getAllClasses());
     }
 
     public void prettyPrintClass() {

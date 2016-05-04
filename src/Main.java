@@ -46,7 +46,7 @@ public class Main {
         User randUser = testEnv.getRandomNotInfectedUser();
         System.out.println("\nRandom user: " + randUser.getName());
 //        testEnv.totalInfection(randUser, newSiteVersion);
-        testEnv.limitedInfection(randUser, newSiteVersion, 0.25f);
+        testEnv.limitedInfection(newSiteVersion, 0.25f);
         testEnv.prettyPrintInfectedUsers();
     }
 }
